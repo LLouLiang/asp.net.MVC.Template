@@ -1,0 +1,84 @@
+﻿@model PracticeForFriday.Models.ViewModel
+@using PagedList;
+@using PagedList.Mvc;
+@{
+	List<SelectListItem> mag = new List<SelectListItem>();
+	
+	List<Magazine> m = (List<Magazine>)TempData["mags"];
+	m = (List<Magazine>)Session["magazines"];
+	foreach (var item in m)
+	{
+		SelectListItem li = new SelectListItem();
+		li.Value = item.Magazine_ID.ToString();
+		li.Text = item.Magazine_Name.ToString();
+		mag.Add(li);
+	}
+	ViewBag.magazines = mag;
+}
+@using (Html.BeginForm("Create","Content",FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+   
+    <div class="form-horizontal">
+        <h4>Subscription</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group" hidden>
+            @Html.LabelFor(Model => Model.Subscription.SubscriptionID, htmlAttributes: new { @class = "control-label col-md-2" })
+        </div>
+
+        <div class="form-group">
+            @Html.Label("Magazine Name", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+				@Html.DropDownListFor(Model => Model.Subscription.Magazine_ID,(IEnumerable<SelectListItem>)ViewBag.magazines, new { htmlAttributes = new { @class = "form-control" } })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(Model => Model.Subscription.Start_Date, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(Model => Model.Subscription.Start_Date, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(Model => Model.Subscription.Start_Date, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(Model => Model.Subscription.End_Date, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(Model => Model.Subscription.End_Date, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(Model => Model.Subscription.End_Date, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(Model => Model.Subscription.Active, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(Model => Model.Subscription.Active, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(Model => Model.Subscription.Active, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(Model => Model.Subscription.Rate, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(Model => Model.Subscription.Rate, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(Model => Model.Subscription.Rate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group" hidden>
+            @Html.LabelFor(Model => Model.Subscription.User_ID, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(Model => Model.Subscription.User_ID, new { htmlAttributes = new { @class = "form-control", required = "disable" } })
+                @Html.ValidationMessageFor(Model => Model.Subscription.User_ID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+

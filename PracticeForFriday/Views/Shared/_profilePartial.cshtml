@@ -1,0 +1,21 @@
+﻿@using PracticeForFriday.Models
+@{
+	mvcEntities me = new mvcEntities();
+	int userid = Convert.ToInt32(Session["ID"]);
+	Employee emp = me.Employees.Where(X=>X.userid == userid).First();
+	ViewModel vm = new ViewModel();
+	vm.Employee = AutoMapper.Mapper.Map<Employee,EmployeeViewModel>(emp);
+	
+}
+	<li>
+	<div class="dropdown">
+		<img src="@Session["imgUrl"].ToString()" class="dropbtn" />
+		<div class="dropdown-content">
+			<ol>
+				<li>@vm.Employee.first_name</li>
+				<li>@vm.Employee.last_name</li>
+				<li>3</li>
+			</ol>
+		</div>
+	</div>
+</li>

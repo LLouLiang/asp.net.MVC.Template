@@ -1,0 +1,240 @@
+﻿
+@using PagedList;
+@using PagedList.Mvc;
+@model PracticeForFriday.Models.ViewModel
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>DataBody</title>
+	<link href="~/Content/angular-material.css" rel="stylesheet" />
+	<script src="~/Scripts/angular.min.js"></script>
+	
+	<script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>
+	<script src="https://cdn.firebase.com/libs/angularfire/2.0.1/angularfire.min.js"></script>
+	<script src="~/Scripts/angular-animate.min.js"></script>
+	<script src="~/Scripts/angular-aria.min.js"></script>
+	<script src="~/Scripts/angular-material.min.js"></script>
+	<script>
+		var config = {
+			apiKey: "AIzaSyDc5jSrwwhyIV1EWuMICuSvx-NDyDdT5RI",
+			authDomain: "practicefriday.firebaseapp.com",
+			databaseURL: "https://practicefriday.firebaseio.com",
+			projectId: "practicefriday",
+			storageBucket: "practicefriday.appspot.com",
+			messagingSenderId: "764592457322"
+		};
+		firebase.initializeApp(config);
+
+		var app = angular.module('myApp', ['ngMaterial', 'firebase']);
+		// Firebase Storage service
+		app.service("fbStorageService", function ($q,$http,$firebaseArray,$firebaseObject) {
+			// firebase storage
+			this.storageRef = firebase.storage().ref();
+			this.upload = function(file, uid, filename) {
+				var deferred = $q.defer();
+				this.fileRef = this.storageRef.child(uid).child(filename+"_"+file.name);
+				this.task = this.fileRef.put(file);
+				this.task.on(firebase.storage.TaskEvent.STATE_CHANGED,
+					function (snapshot) {
+						switch (snapshot.state) {
+							case firebase.storage.TaskState.PAUSE:
+								break;
+							case firebase.storage.TaskState.STOP:
+								break;
+							default:
+								break;
+						}
+					},
+					function (error) {
+						alert("ERROR: CODE" + error.code);
+					},
+					function () {
+						deferred.resolve();
+					});
+				return deferred.promise;
+			}
+		});
+		app.controller('Ctrl', function ($http,$scope, $firebaseObject, $log,fbStorageService) {
+			// firebase database root name setting
+			const rootRef = firebase.database().ref().child('angular');
+			// firebase database child node setting
+			const ref = rootRef.child('object');
+			// setting the attribute val
+			$scope.displaydata = $firebaseObject(ref);
+			// progress show
+			$scope.showProgress = false;
+			//upload button
+			$scope.displaydata.$ref().once('value', function (snapshot) {
+				$scope.fbval = snapshot.val();
+			});
+			$scope.btnCreate = function () {
+				$scope.checked = true;
+			}
+			// get head portrait stored
+			$scope.fileupload = function () {
+				$scope.showProgress = true;
+				$scope.uploaddisable = true;
+				var thisfile = document.getElementById("file").files[0];
+				r = new FileReader();
+				r.onloadend = function (e) {
+					var data = e.target.result;
+				}
+				r.readAsBinaryString(thisfile);
+
+				fbStorageService.upload(thisfile, "Avator", "User_head_portrait").then(function () {
+					
+					var firebasestorageRef = firebase.storage().ref();
+					firebasestorageRef.child('Avator').child('User_head_portrait_' + thisfile.name).getDownloadURL().then(function (url) {
+						$log.info(url);
+						//we done here
+						$http({
+							method: "POST",
+							url: '@Url.Action("addPortrait","Content")',
+							data: {
+								portrait_url: url
+							}
+						}).then(function () {
+							$scope.showProgress = false;
+							$scope.uploaddisable = false;
+							alert("all set");
+						});
+					});
+				});
+				// Get Image download URL
+				@*var storageRef = firebase.storage().ref();
+				storageRef.child('Avator').child('User_head_portrait' + '_' + thisfile.name).getDownloadURL().then(function (url) {
+
+					$log.info(url);
+					alert(url);
+					$http({
+						method: "POST",
+						url: '@Url.Action("addPortrait","Content")',
+						data: {
+							portrait_url:url
+						}
+					});
+					//get image url
+				}).catch(function (error) {
+					//catch error
+					});*@
+				
+			}
+		});
+		//manual bootstrap process
+		angular.element(document).ready(function () {
+			angular.bootstrap(document, ['myApp']);
+		});
+	</script>
+	
+</head>
+<body>
+	
+    @*<table class="table">
+        <tr>
+            <th>
+               magazine id
+            </th>
+            <th>
+                start date
+            </th>
+            <th>
+               end date
+            </th>
+            <th>
+                Active
+            </th>
+            <th>
+                rate
+            </th>
+            <th>
+                userid
+            </th>
+            <th></th>
+        </tr>
+    
+    @foreach (var item in Model.Subscriptions)
+	{
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Magazine_ID)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Start_Date)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.End_Date)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Active)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Rate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.User_ID)
+            </td>
+        </tr>
+	}
+    </table>*@
+	@*@Html.PagedListPager(Model.Subscriptions, page => Url.Action("DataBody","Content", new { page, Model }))*@
+	
+
+	<div>
+	@{
+		var grid = new WebGrid(Model.subscriptionList, columnNames: new[] { " magazineid", "startdate", "enddate", "active", "rate", "user" }, rowsPerPage: 5);
+	}
+	@grid.GetHtml(tableStyle: "wg table",
+	headerStyle: "wg-header",
+	alternatingRowStyle: "wg-alterRow",
+	rowStyle: "wg-row",
+				 mode: WebGridPagerModes.All,
+				 columns: grid.Columns(
+				 grid.Column("magazineid", format: @<span>@item.Magazine_ID</span>),
+				 grid.Column("startdate", format: @<span>@item.Start_Date</span>),
+				grid.Column("enddate", format: @<span>@item.End_Date</span>),
+				grid.Column("active", format: @<span>@item.Active</span>),
+				grid.Column("rate", format: @<span>@item.Rate</span>),
+				grid.Column("user", format: @<span>@item.User_ID</span>)
+					)
+				)
+	</div>
+
+	<div ng-controller="Ctrl">
+		<md-content>
+			<md-button ng-click="btnCreate()" ng-init="checked = false" ng-model="checked">
+				Add a New SubScription
+			</md-button>
+		</md-content>
+		@*IMAGE UPLOADING PROGRESS BAR*@
+		<md-progress-circular md-mode="indeterminate" ng-show="showProgress" class="md-warn md-hue-3" md-diameter="70"></md-progress-circular>
+		<md-input-container>
+			<input type="file" id="file" accept="image/*">
+			<md-button ng-click="fileupload()" ng-disabled="uploaddisable">
+				UPLOAD
+			</md-button>
+		</md-input-container>
+		@*Image upload*@
+
+		<div ng-if="checked">
+			@using PracticeForFriday.Models
+			@{
+				SubscriptionViewModel sub = new SubscriptionViewModel();
+				sub.SubscriptionID = 1;
+				sub.Rate = (decimal)10.0;
+				sub.Start_Date = System.DateTime.Now;
+				sub.End_Date = System.DateTime.Now;
+				sub.Magazine_ID = 1;
+				sub.Active = "1";
+				sub.User_ID = Session["ID"].ToString();
+				Session["ID"] = sub.User_ID;
+				ViewModel vm = new ViewModel();
+				vm.Subscription = sub;
+			}
+			@{Html.RenderPartial("~/Views/Shared/subScripe.cshtml", vm);}
+		</div>
+
+	</div>
+</body>
+</html>

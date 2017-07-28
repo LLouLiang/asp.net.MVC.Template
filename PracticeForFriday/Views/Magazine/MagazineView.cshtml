@@ -1,0 +1,43 @@
+﻿@using PagedList;
+@using PagedList.Mvc;
+@model IPagedList<PracticeForFriday.Magazine>
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>MagazineView</title>
+</head>
+<body>
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.First().Magazine_Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.First().Press)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.First().Country)
+            </th>
+            <th></th>
+        </tr>
+    
+    @foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Magazine_Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Press)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Country)
+            </td>
+        </tr>
+    }
+ 
+    </table>
+	@Html.PagedListPager(Model, page => Url.Action("MagazineView", new { page }))
+</body>
+</html>
